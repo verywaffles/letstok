@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LetsTok Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <div id="sidebar">
+    <h3>Online</h3>
+    <ul id="users"></ul>
+  </div>
+
+  <div id="chat">
+    <ul id="messages"></ul>
+    <input id="input" placeholder="message">
+    <button onclick="send()">Send</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
