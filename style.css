@@ -1,27 +1,85 @@
-body {
-  margin: 0;
-  font-family: Arial;
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#0f1117;
+    color:white;
 }
 
-#app {
-  display: flex;
-  height: 100vh;
+#app{
+    display:flex;
+    height:100vh;
 }
 
-#sidebar {
-  width: 200px;
-  background: #222;
-  color: white;
-  padding: 10px;
+#sidebar{
+    width:260px;
+    background:#111827;
+    border-right:1px solid #1e293b;
+    padding:15px;
+    overflow-y:auto;
 }
 
-#chat {
-  flex: 1;
-  padding: 10px;
+#sidebar h3{
+    color:#60a5fa;
 }
 
-#messages {
-  list-style: none;
-  height: 80vh;
-  overflow-y: auto;
+#users{
+    list-style:none;
+    padding:0;
+}
+
+#users li{
+    padding:10px;
+    margin-bottom:5px;
+    border-radius:8px;
+    background:#1e293b;
+}
+
+#chat{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    background:#0f1117;
+}
+
+#messages{
+    flex:1;
+    list-style:none;
+    padding:20px;
+    overflow-y:auto;
+}
+
+#messages li{
+    margin-bottom:10px;
+    padding:10px;
+    background:#1e293b;
+    border-radius:10px;
+}
+
+#inputBox{
+    display:flex;
+    padding:15px;
+    background:#111827;
+    gap:10px;
+}
+
+#input{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#1e293b;
+    color:white;
+}
+
+button{
+    padding:12px 20px;
+    border:none;
+    border-radius:10px;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#3b82f6;
 }
