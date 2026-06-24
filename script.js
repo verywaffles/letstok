@@ -1,4 +1,4 @@
-const socket = io("https://letstok-backend.onrender.com")
+const socket = io("https://letstok-backend.onrender.com");
 
 const username = localStorage.getItem("name");
 
@@ -10,35 +10,47 @@ const messages = document.getElementById("messages");
 const users = document.getElementById("users");
 const input = document.getElementById("input");
 
-// Tell server who we are
+let mode = "global"; // global | dm | group
+let targetUser = null;
+let groupName = null;
+
+// join global
 socket.emit("join", username);
 
-// Send message
+// SEND MESSAGE
 function send() {
     const text = input.value.trim();
+    if (!text) return;
 
-    if (text === "") return;
+    if (mode === "global") {
+        socket.emit("message", text);
+    }
 
-    socket.emit("message", text);
+    else if (mode === "dm") {
+        socket.emit("dmMessage", {
+            to: targetUser,
+            text
+        });
+    }
+
+    else if (mode === "group") {
+        socket.emit("groupMessage", {
+            group: groupName,
+            text
+        });
+    }
 
     input.value = "";
 }
 
-// Press Enter to send
+// ENTER SEND
 input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        send();
-    }
+    if (e.key === "Enter") send();
 });
 
-// Receive messages
+// RECEIVE MESSAGE
 socket.on("message", (data) => {
-    console.log("RECEIVED:", data);
-
     const li = document.createElement("li");
-
-    li.style.color = "#4ea1ff";
-    li.style.fontSize = "18px";
 
     const time = new Date(data.time).toLocaleTimeString([], {
         hour: "2-digit",
@@ -47,7 +59,7 @@ socket.on("message", (data) => {
 
     li.innerHTML = `
         <strong>${data.user}</strong>
-        <small style="opacity:0.6; margin-left:8px;">${time}</small>
+        <small style="opacity:0.5;margin-left:8px;">${time}</small>
         <br>
         ${data.text}
     `;
@@ -56,26 +68,40 @@ socket.on("message", (data) => {
     messages.scrollTop = messages.scrollHeight;
 });
 
-// Update online users list
-socket.on("users", (onlineUsers) => {
+// USERS LIST
+socket.on("users", (list) => {
     users.innerHTML = "";
 
-    onlineUsers.forEach((user) => {
+    list.forEach(u => {
         const li = document.createElement("li");
+        li.textContent = "🟢 " + u;
 
-        li.innerHTML = `
-            🟢 ${user}
-        `;
+        li.onclick = () => startDM(u);
 
         users.appendChild(li);
     });
 });
 
-// Connection status
-socket.on("connect", () => {
-    console.log("Connected to LetsTok");
-});
+// MODE SWITCHERS
+function openGlobal() {
+    mode = "global";
+    targetUser = null;
+    groupName = null;
+}
 
-socket.on("disconnect", () => {
-    console.log("Disconnected from LetsTok");
-});
+function startDM(user) {
+    mode = "dm";
+    targetUser = user;
+
+    socket.emit("joinDM", user);
+}
+
+function createGroup() {
+    const name = prompt("Group name?");
+    if (!name) return;
+
+    mode = "group";
+    groupName = name;
+
+    socket.emit("joinGroup", name);
+}
