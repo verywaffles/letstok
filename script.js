@@ -1,4 +1,4 @@
-const socket = io("http://20.83.59.110:3000")
+const socket = io("https://letstok-backend.onrender.com")
 
 const username = localStorage.getItem("name");
 
