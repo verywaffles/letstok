@@ -1,61 +1,51 @@
 <!DOCTYPE html>
-
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LetsTok</title>
-
-```
-<link rel="stylesheet" href="style.css">
-
-<!-- Socket.IO from CDN -->
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-```
-
+  <title>LetsTok</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="app">
 
-```
-<aside id="sidebar">
-    <div id="logo">
-        <h2>LetsTok</h2>
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar">
+
+    <h2>LetsTok</h2>
+
+    <button onclick="openGlobal()">🌍 Global</button>
+
+    <button onclick="openDMs()">💬 DMs</button>
+
+    <button onclick="createGroup()">➕ Group</button>
+
+    <div id="dmPanel" style="display:none;">
+      <input id="dmUser" placeholder="Enter username">
+      <button onclick="startDM()">Start DM</button>
     </div>
 
-    <div id="onlineSection">
-        <h3>Online Users</h3>
-        <ul id="users"></ul>
-    </div>
-</aside>
+  </div>
 
-<main id="chat">
-
-    <header id="chatHeader">
-        <h2>Global Chat</h2>
-    </header>
-
+  <!-- CHAT AREA -->
+  <div id="chat">
     <ul id="messages"></ul>
 
-    <div id="inputBox">
-        <input
-            id="input"
-            type="text"
-            placeholder="Type a message..."
-            autocomplete="off"
-        >
-
-        <button onclick="send()">Send</button>
+    <div id="inputArea">
+      <input id="input" placeholder="message...">
+      <button onclick="send()">Send</button>
     </div>
+  </div>
 
-</main>
-```
+  <!-- RIGHT USERS -->
+  <div id="usersPanel">
+    <h3>Online</h3>
+    <ul id="users"></ul>
+  </div>
 
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
 <script src="script.js"></script>
 
 </body>
 </html>
-
