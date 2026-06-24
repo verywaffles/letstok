@@ -37,12 +37,23 @@ socket.on("message", (data) => {
 
     const li = document.createElement("li");
 
-    li.style.color = "red";
-    li.style.fontSize = "24px";
+    li.style.color = "#4ea1ff";
+    li.style.fontSize = "18px";
 
-    li.textContent = "TEST MESSAGE";
+    const time = new Date(data.time).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    li.innerHTML = `
+        <strong>${data.user}</strong>
+        <small style="opacity:0.6; margin-left:8px;">${time}</small>
+        <br>
+        ${data.text}
+    `;
 
     messages.appendChild(li);
+    messages.scrollTop = messages.scrollHeight;
 });
 
 // Update online users list
