@@ -1,102 +1,69 @@
 body {
-margin: 0;
-font-family: Arial, sans-serif;
-background: #0b1220;
-color: white;
+    margin: 0;
+    font-family: Arial;
+    background: #0f1117;
+    color: #4ea1ff;
 }
 
 #app {
-display: flex;
-height: 100vh;
+    display: flex;
+    height: 100vh;
 }
 
+/* LEFT SIDEBAR */
 #sidebar {
-width: 260px;
-background: #111827;
-border-right: 1px solid #1f2937;
-padding: 15px;
-box-sizing: border-box;
+    width: 200px;
+    background: #0b0d12;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-#sidebar h3 {
-margin-top: 0;
-color: #60a5fa;
+#sidebar button {
+    background: #1a1d24;
+    color: #4ea1ff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
 }
 
-#users {
-list-style: none;
-padding: 0;
-margin: 0;
-}
-
-#users li {
-background: #1e293b;
-margin-bottom: 8px;
-padding: 10px;
-border-radius: 8px;
-color: white;
-}
-
+/* CHAT */
 #chat {
-flex: 1;
-display: flex;
-flex-direction: column;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 #messages {
-flex: 1;
-overflow-y: auto;
-list-style: none;
-margin: 0;
-padding: 20px;
+    flex: 1;
+    list-style: none;
+    padding: 10px;
+    overflow-y: auto;
 }
 
 #messages li {
-background: #1e293b;
-color: #ffffff;
-padding: 12px;
-margin-bottom: 10px;
-border-radius: 10px;
-word-wrap: break-word;
-font-size: 16px;
+    background: #1a1d24;
+    margin: 5px;
+    padding: 8px;
+    border-radius: 8px;
 }
 
-#messages strong {
-color: #60a5fa;
-}
-
-#inputBox {
-display: flex;
-gap: 10px;
-padding: 15px;
-background: #111827;
-border-top: 1px solid #1f2937;
+/* INPUT */
+#inputArea {
+    display: flex;
+    padding: 10px;
+    background: #0b0d12;
 }
 
 #input {
-flex: 1;
-padding: 12px;
-border: none;
-border-radius: 10px;
-background: #1e293b;
-color: white;
-font-size: 16px;
+    flex: 1;
+    padding: 10px;
 }
 
-#input::placeholder {
-color: #94a3b8;
-}
-
-button {
-background: #2563eb;
-color: white;
-border: none;
-border-radius: 10px;
-padding: 12px 18px;
-cursor: pointer;
-font-size: 16px;
-}
-
-button:hover {
-background: #3b82f6;
+/* RIGHT USERS */
+#usersPanel {
+    width: 200px;
+    background: #0b0d12;
+    padding: 10px;
 }
