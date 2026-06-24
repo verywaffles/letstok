@@ -33,23 +33,16 @@ input.addEventListener("keydown", (e) => {
 
 // Receive messages
 socket.on("message", (data) => {
+    console.log("RECEIVED:", data);
+
     const li = document.createElement("li");
 
-    const time = new Date(data.time).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    li.style.color = "red";
+    li.style.fontSize = "24px";
 
-    li.innerHTML = `
-        <strong>${data.user}</strong>
-        <small style="opacity:.6;margin-left:8px;">${time}</small>
-        <br>
-        ${data.text}
-    `;
+    li.textContent = "TEST MESSAGE";
 
     messages.appendChild(li);
-
-    messages.scrollTop = messages.scrollHeight;
 });
 
 // Update online users list
