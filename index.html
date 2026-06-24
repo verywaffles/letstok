@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LetsTok</title>
+</head>
+<body>
+  <h1>LetsTok</h1>
+
+  <input id="name" placeholder="Enter username">
+  <button onclick="login()">Enter</button>
+
+  <script>
+    function login() {
+      const name = document.getElementById("name").value;
+      if (!name) return alert("Enter a username");
+
+      localStorage.setItem("name", name);
+      window.location.href = "chat.html";
+    }
+  </script>
+</body>
+</html>
