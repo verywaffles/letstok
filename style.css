@@ -1,87 +1,102 @@
-body{
-    margin:0;
-    font-family:Arial,sans-serif;
-    background:#0f1117;
-    color:white;
+body {
+margin: 0;
+font-family: Arial, sans-serif;
+background: #0b1220;
+color: white;
 }
 
-#app{
-    display:flex;
-    height:100vh;
+#app {
+display: flex;
+height: 100vh;
 }
 
-#sidebar{
-    width:260px;
-    background:#111827;
-    border-right:1px solid #1e293b;
-    padding:15px;
-    overflow-y:auto;
+#sidebar {
+width: 260px;
+background: #111827;
+border-right: 1px solid #1f2937;
+padding: 15px;
+box-sizing: border-box;
 }
 
-#sidebar h3{
-    color:#60a5fa;
+#sidebar h3 {
+margin-top: 0;
+color: #60a5fa;
 }
 
-#users{
-    list-style:none;
-    padding:0;
+#users {
+list-style: none;
+padding: 0;
+margin: 0;
 }
 
-#users li{
-    padding:10px;
-    margin-bottom:5px;
-    border-radius:8px;
-    background:#1e293b;
+#users li {
+background: #1e293b;
+margin-bottom: 8px;
+padding: 10px;
+border-radius: 8px;
+color: white;
 }
 
-#chat{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    background:#0f1117;
+#chat {
+flex: 1;
+display: flex;
+flex-direction: column;
 }
 
-#messages{
-    flex:1;
-    list-style:none;
-    padding:20px;
-    overflow-y:auto;
+#messages {
+flex: 1;
+overflow-y: auto;
+list-style: none;
+margin: 0;
+padding: 20px;
 }
 
-#messages li{
-    margin-bottom:10px;
-    padding:10px;
-    background:#1e293b;
-    border-radius:10px;
-    color:#60a5fa;
-    font-size:16px;
+#messages li {
+background: #1e293b;
+color: #ffffff;
+padding: 12px;
+margin-bottom: 10px;
+border-radius: 10px;
+word-wrap: break-word;
+font-size: 16px;
 }
 
-#inputBox{
-    display:flex;
-    padding:15px;
-    background:#111827;
-    gap:10px;
+#messages strong {
+color: #60a5fa;
 }
 
-#input{
-    flex:1;
-    padding:12px;
-    border:none;
-    border-radius:10px;
-    background:#1e293b;
-    color:white;
+#inputBox {
+display: flex;
+gap: 10px;
+padding: 15px;
+background: #111827;
+border-top: 1px solid #1f2937;
 }
 
-button{
-    padding:12px 20px;
-    border:none;
-    border-radius:10px;
-    background:#2563eb;
-    color:white;
-    cursor:pointer;
+#input {
+flex: 1;
+padding: 12px;
+border: none;
+border-radius: 10px;
+background: #1e293b;
+color: white;
+font-size: 16px;
 }
 
-button:hover{
-    background:#3b82f6;
+#input::placeholder {
+color: #94a3b8;
+}
+
+button {
+background: #2563eb;
+color: white;
+border: none;
+border-radius: 10px;
+padding: 12px 18px;
+cursor: pointer;
+font-size: 16px;
+}
+
+button:hover {
+background: #3b82f6;
 }
