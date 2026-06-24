@@ -1,26 +1,61 @@
 <!DOCTYPE html>
-<html>
+
+<html lang="en">
 <head>
-  <title>LetsTok Chat</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LetsTok</title>
+
+```
+<link rel="stylesheet" href="style.css">
+
+<!-- Socket.IO from CDN -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+```
+
 </head>
 <body>
 
 <div id="app">
-  <div id="sidebar">
-    <h3>Online</h3>
-    <ul id="users"></ul>
-  </div>
 
-  <div id="chat">
+```
+<aside id="sidebar">
+    <div id="logo">
+        <h2>LetsTok</h2>
+    </div>
+
+    <div id="onlineSection">
+        <h3>Online Users</h3>
+        <ul id="users"></ul>
+    </div>
+</aside>
+
+<main id="chat">
+
+    <header id="chatHeader">
+        <h2>Global Chat</h2>
+    </header>
+
     <ul id="messages"></ul>
-    <input id="input" placeholder="message">
-    <button onclick="send()">Send</button>
-  </div>
+
+    <div id="inputBox">
+        <input
+            id="input"
+            type="text"
+            placeholder="Type a message..."
+            autocomplete="off"
+        >
+
+        <button onclick="send()">Send</button>
+    </div>
+
+</main>
+```
+
 </div>
 
-<script src="/socket.io/socket.io.js"></script>
 <script src="script.js"></script>
 
 </body>
 </html>
+
