@@ -1,23 +1,145 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>LetsTok</title>
-  <link rel="icon" type="image/png" href="/favicon.png">
+
+  <!-- FAVICON -->
+  <link rel="icon" type="image/png" href="/faviconforletstok.png">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f5f5;
+    }
+
+    #chat {
+      padding: 10px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+
+    .msg {
+      background: white;
+      padding: 8px;
+      margin: 6px;
+      border-radius: 8px;
+      max-width: 300px;
+    }
+
+    .user {
+      font-weight: bold;
+      font-size: 12px;
+      color: gray;
+    }
+
+    .img {
+      max-width: 200px;
+      border-radius: 8px;
+      margin-top: 5px;
+    }
+
+    #inputBar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      background: white;
+      border-top: 1px solid #ddd;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 8px;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>LetsTok</h1>
 
-  <input id="name" placeholder="Enter username">
-  <button onclick="login()">Enter</button>
+  <div id="chat"></div>
 
+  <div id="inputBar">
+    <input type="file" id="imageInput" accept="image/*">
+    <input type="text" id="textInput" placeholder="Message...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
   <script>
-    function login() {
-      const name = document.getElementById("name").value;
-      if (!name) return alert("Enter a username");
+    const socket = io();
 
-      localStorage.setItem("name", name);
-      window.location.href = "chat.html";
+    // join system (temporary username)
+    const username = prompt("Enter username:");
+    socket.emit("join", username);
+
+    const chat = document.getElementById("chat");
+
+    // RECEIVE MESSAGE
+    socket.on("message", (msg) => {
+      const div = document.createElement("div");
+      div.className = "msg";
+
+      const user = document.createElement("div");
+      user.className = "user";
+      user.textContent = msg.user;
+
+      div.appendChild(user);
+
+      // TEXT
+      if (msg.text) {
+        const text = document.createElement("div");
+        text.textContent = msg.text;
+        div.appendChild(text);
+      }
+
+      // IMAGE
+      if (msg.image) {
+        const img = document.createElement("img");
+        img.src = msg.image;
+        img.className = "img";
+        div.appendChild(img);
+      }
+
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    });
+
+    // SEND MESSAGE (TEXT OR IMAGE)
+    function sendMessage() {
+      const textInput = document.getElementById("textInput");
+      const imageInput = document.getElementById("imageInput");
+
+      const file = imageInput.files[0];
+
+      // IMAGE
+      if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function () {
+          socket.emit("message", {
+            image: reader.result
+          });
+        };
+
+        reader.readAsDataURL(file);
+        imageInput.value = "";
+        return;
+      }
+
+      // TEXT
+      if (textInput.value.trim() !== "") {
+        socket.emit("message", {
+          text: textInput.value
+        });
+
+        textInput.value = "";
+      }
     }
   </script>
+
 </body>
 </html>
