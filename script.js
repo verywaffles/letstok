@@ -54,10 +54,9 @@ socket.on("disconnect", () => {
 });
 
 socket.on("connect_error", (err) => {
-
-    console.log("CONNECT ERROR");
+    console.log("CONNECT ERROR:");
     console.log(err);
-
+    console.log(err.message);
 });
 
 // =====================
