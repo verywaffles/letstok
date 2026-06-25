@@ -1,7 +1,9 @@
+let state = { mode: "global" };
 
-// =====================
-// SOCKET (MUST LOAD FIRST AFTER CDN)
-// =====================
+const messages = document.getElementById("messages");
+const users = document.getElementById("users");
+const input = document.getElementById("input");
+
 const socket = io("https://letstok-backend.onrender.com");
 
 // =====================
