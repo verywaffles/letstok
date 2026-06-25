@@ -1,50 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>LetsTok</title>
+  <meta charset="UTF-8">
+  <title>LetsTok Chat</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <div id="app">
 
-  <!-- LEFT SIDEBAR -->
+  <!-- ===================== -->
+  <!-- LEFT SIDEBAR (NAV) -->
+  <!-- ===================== -->
   <div id="sidebar">
 
-    <h2>LetsTok</h2>
+    <div id="logo">
+      <h2>💬 LetsTok</h2>
+    </div>
 
-    <button onclick="openGlobal()">🌍 Global</button>
+    <button onclick="openServer()">🌍 Global Server</button>
+    <button onclick="openDMPage()">💌 Direct Messages</button>
 
-    <button onclick="openDMs()">💬 DMs</button>
+    <hr>
 
-    <button onclick="createGroup()">➕ Group</button>
-
-    <div id="dmPanel" style="display:none;">
-      <input id="dmUser" placeholder="Enter username">
-      <button onclick="startDM()">Start DM</button>
+    <div id="dmCreateBox">
+      <h4>Start DM</h4>
+      <input id="dmInput" placeholder="Enter username">
+      <button onclick="startDM()">Create DM</button>
     </div>
 
   </div>
 
-  <!-- CHAT AREA -->
-  <div id="chat">
-    <ul id="messages"></ul>
+  <!-- ===================== -->
+  <!-- MAIN SERVER CHAT -->
+  <!-- ===================== -->
+  <div id="serverPage" class="page">
 
-    <div id="inputArea">
-      <input id="input" placeholder="message...">
-      <button onclick="send()">Send</button>
+    <!-- CHAT MESSAGES -->
+    <div id="chat">
+
+      <div id="chatHeader">
+        <h3>🌍 Global Chat</h3>
+      </div>
+
+      <ul id="messages"></ul>
+
+      <div id="inputArea">
+        <input id="input" placeholder="Type a message...">
+        <button onclick="send()">Send</button>
+      </div>
+
     </div>
+
+    <!-- ONLINE USERS -->
+    <div id="usersPanel">
+
+      <h3>🟢 Online Users</h3>
+
+      <ul id="users"></ul>
+
+      <p id="hint">
+        Click a user to DM
+      </p>
+
+    </div>
+
   </div>
 
-  <!-- RIGHT USERS -->
-  <div id="usersPanel">
-    <h3>Online</h3>
-    <ul id="users"></ul>
+  <!-- ===================== -->
+  <!-- DM PAGE -->
+  <!-- ===================== -->
+  <div id="dmPage" class="page hidden">
+
+    <div id="dmHeader">
+      <h2>💌 Direct Messages</h2>
+      <p>Select or start a conversation</p>
+    </div>
+
+    <div id="dmList"></div>
+
+    <div id="dmEmptyState">
+      <p>No DM selected yet</p>
+    </div>
+
   </div>
 
 </div>
 
+<!-- SOCKET.IO -->
 <script src="/socket.io/socket.io.js"></script>
+
+<!-- YOUR SCRIPT -->
 <script src="script.js"></script>
 
 </body>
