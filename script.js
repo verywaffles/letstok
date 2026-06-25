@@ -1,12 +1,15 @@
+// =====================
+// CONFIG
+// =====================
 
-// =====================
-// SOCKET
-// =====================
-const socket = io("https://letstok-backendv2.onrender.com");
+const BACKEND_URL = "https://letstok-backendv2.onrender.com";
+
+const socket = io(BACKEND_URL);
 
 // =====================
 // AUTH
 // =====================
+
 const username = localStorage.getItem("name");
 
 if (!username) {
@@ -16,110 +19,215 @@ if (!username) {
 // =====================
 // STATE
 // =====================
+
 const state = {
     mode: "global",
     currentDM: null
 };
 
 // =====================
-// DOM ELEMENTS (GLOBAL CHAT)
+// DOM
 // =====================
+
 const messages = document.getElementById("messages");
 const users = document.getElementById("users");
 const input = document.getElementById("input");
 const dmList = document.getElementById("dmList");
 
 // =====================
-// CONNECT
+// CONNECTION
 // =====================
-socket.emit("join", username);
+
+socket.on("connect", () => {
+
+    console.log("CONNECTED");
+    console.log("Socket ID:", socket.id);
+
+    socket.emit("join", username);
+
+});
+
+socket.on("disconnect", () => {
+
+    console.log("DISCONNECTED");
+
+});
+
+socket.on("connect_error", (err) => {
+
+    console.log("CONNECT ERROR");
+    console.log(err);
+
+});
 
 // =====================
 // PAGE SWITCHING
 // =====================
+
 function openServer() {
+
     state.mode = "global";
     state.currentDM = null;
 
     document.getElementById("serverPage").classList.remove("hidden");
     document.getElementById("dmPage").classList.add("hidden");
+
 }
 
 function openDMPage() {
+
     document.getElementById("serverPage").classList.add("hidden");
     document.getElementById("dmPage").classList.remove("hidden");
+
 }
 
 // =====================
-// SEND MESSAGE
+// SEND GLOBAL MESSAGE
 // =====================
+
 function send() {
+
     const text = input.value.trim();
+
     if (!text) return;
 
-    if (state.mode === "global") {
-        socket.emit("message", text);
-    }
-
-    if (state.mode === "dm" && state.currentDM) {
-        socket.emit("dmMessage", {
-            to: state.currentDM,
-            text
-        });
-    }
+    socket.emit("message", text);
 
     input.value = "";
+
 }
 
-// ENTER KEY
-input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") send();
-});
+// Enter key
+
+if (input) {
+
+    input.addEventListener("keydown", (e) => {
+
+        if (e.key === "Enter") {
+            send();
+        }
+
+    });
+
+}
 
 // =====================
-// RECEIVE GLOBAL MESSAGE
+// RECEIVE MESSAGE
 // =====================
+
 socket.on("message", (data) => {
+
+    console.log("MESSAGE:", data);
+
+    if (state.mode === "dm" && state.currentDM) {
+
+        const dmBox = document.getElementById("dmMessages");
+
+        if (
+            dmBox &&
+            data.room &&
+            data.room.includes(state.currentDM)
+        ) {
+
+            const li = document.createElement("li");
+
+            li.innerHTML =
+                `<strong>${data.user}</strong>: ${data.text}`;
+
+            dmBox.appendChild(li);
+
+            dmBox.scrollTop = dmBox.scrollHeight;
+
+            return;
+        }
+    }
+
     const li = document.createElement("li");
 
-    const time = new Date(data.time).toLocaleTimeString([], {
+    const time = new Date(
+        data.time || Date.now()
+    ).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit"
     });
 
     li.innerHTML = `
         <strong>${data.user}</strong>
-        <small style="opacity:0.5; margin-left:8px;">${time}</small>
+        <small style="opacity:.5;margin-left:8px;">
+            ${time}
+        </small>
         <br>
         ${data.text}
     `;
 
     messages.appendChild(li);
+
     messages.scrollTop = messages.scrollHeight;
+
+});
+
+// =====================
+// GLOBAL HISTORY
+// =====================
+
+socket.on("history", (history) => {
+
+    messages.innerHTML = "";
+
+    history.forEach((msg) => {
+
+        const li = document.createElement("li");
+
+        li.innerHTML = `
+            <strong>${msg.user}</strong>
+            <br>
+            ${msg.text}
+        `;
+
+        messages.appendChild(li);
+
+    });
+
 });
 
 // =====================
 // ONLINE USERS
 // =====================
+
 socket.on("users", (list) => {
+
+    console.log("ONLINE USERS:", list);
+
     users.innerHTML = "";
 
-    list.forEach(user => {
+    list.forEach((user) => {
+
         if (user === username) return;
 
         const li = document.createElement("li");
+
         li.textContent = "🟢 " + user;
 
-        li.onclick = () => openDM(user);
+        li.style.cursor = "pointer";
+
+        li.onclick = () => {
+
+            openDM(user);
+
+        };
 
         users.appendChild(li);
+
     });
+
 });
 
 // =====================
-// OPEN DM (REAL CHAT WINDOW)
+// OPEN DM
 // =====================
+
 function openDM(user) {
+
     state.mode = "dm";
     state.currentDM = user;
 
@@ -127,67 +235,126 @@ function openDM(user) {
 
     dmList.innerHTML = `
         <div id="dmHeader">
-            <h3>💬 Chat with ${user}</h3>
-            <button onclick="openServer()">← Back</button>
+            <h3>💬 ${user}</h3>
+
+            <button onclick="openServer()">
+                ← Back
+            </button>
         </div>
 
         <ul id="dmMessages"></ul>
 
         <div id="dmInputArea">
-            <input id="dmInputBox" placeholder="message...">
-            <button onclick="sendDM()">Send</button>
+
+            <input
+                id="dmInputBox"
+                placeholder="Type message..."
+            >
+
+            <button onclick="sendDM()">
+                Send
+            </button>
+
         </div>
     `;
 
-    loadHistory(user);
+    socket.emit("joinDM", user);
+
+    socket.emit("getHistory", {
+        user
+    });
+
 }
 
 // =====================
 // SEND DM
 // =====================
+
 function sendDM() {
-    const input = document.getElementById("dmInputBox");
-    const text = input.value.trim();
+
+    const box =
+        document.getElementById("dmInputBox");
+
+    if (!box) return;
+
+    const text = box.value.trim();
+
     if (!text) return;
 
     socket.emit("dmMessage", {
+
         to: state.currentDM,
         text
+
     });
 
-    input.value = "";
+    box.value = "";
+
 }
 
 // =====================
-// LOAD DM HISTORY
+// DM HISTORY
 // =====================
-function loadHistory(user) {
-    socket.emit("getHistory", { user });
-}
 
-socket.on("dmHistory", (messages) => {
-    const box = document.getElementById("dmMessages");
-    if (!box) return;
+socket.on("dmHistory", (history) => {
 
-    box.innerHTML = "";
+    const dmBox =
+        document.getElementById("dmMessages");
 
-    messages.forEach(m => {
+    if (!dmBox) return;
+
+    dmBox.innerHTML = "";
+
+    history.forEach((msg) => {
+
         const li = document.createElement("li");
-        li.textContent = `${m.from}: ${m.text}`;
-        box.appendChild(li);
+
+        li.innerHTML =
+            `<strong>${msg.from}</strong>: ${msg.text}`;
+
+        dmBox.appendChild(li);
+
     });
+
 });
 
 // =====================
-// GLOBAL FUNCTIONS (IMPORTANT)
+// START NEW DM
 // =====================
-window.openServer = openServer;
-window.openDMPage = openDMPage;
-window.openDM = openDM;
-window.send = send;
-window.sendDM = sendDM;
+
+function startDM() {
+
+    const box =
+        document.getElementById("dmInput");
+
+    if (!box) return;
+
+    const user = box.value.trim();
+
+    if (!user) return;
+
+    openDM(user);
+
+}
+
+// =====================
+// KEEP RENDER AWAKE
+// =====================
 
 setInterval(() => {
-    fetch("https://letstok-backend.onrender.com")
+
+    fetch(BACKEND_URL)
         .catch(() => {});
-}, 60000); // every 60 seconds
+
+}, 60000);
+
+// =====================
+// GLOBAL FUNCTIONS
+// =====================
+
+window.send = send;
+window.sendDM = sendDM;
+window.openDM = openDM;
+window.openServer = openServer;
+window.openDMPage = openDMPage;
+window.startDM = startDM;
