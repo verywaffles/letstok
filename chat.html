@@ -3,10 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <title>LetsTok Chat</title>
+
   <link rel="stylesheet" href="style.css">
+
+  <!-- ⭐ FAVICON -->
+  <link rel="icon" type="image/png" href="/faviconforletstok.png">
 </head>
 
 <body>
+
+<!-- ===================== -->
+<!-- LOGIN OVERLAY -->
+<!-- ===================== -->
+<div id="loginScreen">
+  <div id="loginBox">
+    <h1>💬 LetsTok</h1>
+    <input id="usernameInput" placeholder="Enter username">
+    <button onclick="joinChat()">Join</button>
+  </div>
+</div>
 
 <div id="app">
 
@@ -37,7 +52,6 @@
   <!-- ===================== -->
   <div id="serverPage" class="page">
 
-    <!-- CHAT MESSAGES -->
     <div id="chat">
 
       <div id="chatHeader">
@@ -46,9 +60,17 @@
 
       <ul id="messages"></ul>
 
+      <!-- INPUT AREA -->
       <div id="inputArea">
+
+        <!-- IMAGE PICKER -->
+        <input type="file" id="imageInput" accept="image/*">
+
+        <!-- TEXT INPUT -->
         <input id="input" placeholder="Type a message...">
+
         <button onclick="send()">Send</button>
+
       </div>
 
     </div>
@@ -91,8 +113,102 @@
 <!-- SOCKET.IO -->
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
-<!-- YOUR SCRIPT -->
+<!-- SCRIPT -->
 <script src="script.js"></script>
+
+<script>
+/* =========================
+   SOCKET + LOGIN SETUP
+========================= */
+
+const socket = io();
+
+let username = null;
+
+// JOIN CHAT (LOGIN SCREEN)
+function joinChat() {
+  const input = document.getElementById("usernameInput");
+  const name = input.value.trim();
+
+  if (!name) return;
+
+  username = name;
+
+  socket.emit("join", username);
+
+  document.getElementById("loginScreen").style.display = "none";
+}
+
+/* =========================
+   SEND MESSAGE (TEXT + IMAGE)
+========================= */
+
+function send() {
+  const textInput = document.getElementById("input");
+  const imageInput = document.getElementById("imageInput");
+
+  const file = imageInput.files[0];
+
+  // IMAGE
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = function () {
+      socket.emit("message", {
+        text: "",
+        image: reader.result
+      });
+    };
+
+    reader.readAsDataURL(file);
+    imageInput.value = "";
+    return;
+  }
+
+  // TEXT
+  const text = textInput.value.trim();
+
+  if (text !== "") {
+    socket.emit("message", {
+      text: text,
+      image: null
+    });
+
+    textInput.value = "";
+  }
+}
+
+/* =========================
+   RECEIVE MESSAGES
+========================= */
+
+socket.on("message", (msg) => {
+  const li = document.createElement("li");
+
+  li.innerHTML = `
+    <b>${msg.user}</b><br>
+    ${msg.text ? `<span>${msg.text}</span>` : ""}
+    ${msg.image ? `<br><img src="${msg.image}" style="max-width:200px;border-radius:8px;">` : ""}
+  `;
+
+  document.getElementById("messages").appendChild(li);
+});
+
+/* =========================
+   USERS LIST
+========================= */
+
+socket.on("users", (users) => {
+  const list = document.getElementById("users");
+  list.innerHTML = "";
+
+  users.forEach(u => {
+    const li = document.createElement("li");
+    li.textContent = u;
+    list.appendChild(li);
+  });
+});
+</script>
 
 </body>
 </html>
