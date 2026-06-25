@@ -1,5 +1,10 @@
 
 // =====================
+// SOCKET
+// =====================
+const socket = io("https://letstok-backend.onrender.com");
+
+// =====================
 // AUTH
 // =====================
 const username = localStorage.getItem("name");
@@ -17,122 +22,167 @@ const state = {
 };
 
 // =====================
-// SOCKET
+// DOM ELEMENTS (GLOBAL CHAT)
 // =====================
-const socket = io("https://letstok-backend.onrender.com");
+const messages = document.getElementById("messages");
+const users = document.getElementById("users");
+const input = document.getElementById("input");
+const dmList = document.getElementById("dmList");
 
 // =====================
-// WAIT FOR DOM (IMPORTANT FIX)
+// CONNECT
 // =====================
-window.addEventListener("DOMContentLoaded", () => {
+socket.emit("join", username);
 
-    const messages = document.getElementById("messages");
-    const users = document.getElementById("users");
-    const input = document.getElementById("input");
-    const dmList = document.getElementById("dmList");
+// =====================
+// PAGE SWITCHING
+// =====================
+function openServer() {
+    state.mode = "global";
+    state.currentDM = null;
 
-    // JOIN
-    socket.emit("join", username);
+    document.getElementById("serverPage").classList.remove("hidden");
+    document.getElementById("dmPage").classList.add("hidden");
+}
 
-    // SEND MESSAGE
-    function send() {
-        const text = input.value.trim();
-        if (!text) return;
+function openDMPage() {
+    document.getElementById("serverPage").classList.add("hidden");
+    document.getElementById("dmPage").classList.remove("hidden");
+}
 
-        if (state.mode === "global") {
-            socket.emit("message", text);
-        }
+// =====================
+// SEND MESSAGE
+// =====================
+function send() {
+    const text = input.value.trim();
+    if (!text) return;
 
-        if (state.mode === "dm" && state.currentDM) {
-            socket.emit("dmMessage", {
-                to: state.currentDM,
-                text
-            });
-        }
-
-        input.value = "";
+    if (state.mode === "global") {
+        socket.emit("message", text);
     }
 
-    input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") send();
-    });
-
-    // RECEIVE MESSAGE
-    socket.on("message", (data) => {
-        const li = document.createElement("li");
-
-        const time = new Date(data.time).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit"
+    if (state.mode === "dm" && state.currentDM) {
+        socket.emit("dmMessage", {
+            to: state.currentDM,
+            text
         });
-
-        li.innerHTML = `
-            <strong>${data.user}</strong>
-            <small style="opacity:0.5; margin-left:8px;">${time}</small>
-            <br>
-            ${data.text}
-        `;
-
-        messages.appendChild(li);
-        messages.scrollTop = messages.scrollHeight;
-    });
-
-    // USERS
-    socket.on("users", (list) => {
-        users.innerHTML = "";
-
-        list.forEach(user => {
-            if (user === username) return;
-
-            const li = document.createElement("li");
-            li.textContent = "🟢 " + user;
-
-            li.onclick = () => openDM(user);
-
-            users.appendChild(li);
-        });
-    });
-
-    // PAGE SWITCHING
-    function openServer() {
-        state.mode = "global";
-        state.currentDM = null;
-
-        document.getElementById("serverPage").classList.remove("hidden");
-        document.getElementById("dmPage").classList.add("hidden");
     }
 
-    function openDMPage() {
-        document.getElementById("serverPage").classList.add("hidden");
-        document.getElementById("dmPage").classList.remove("hidden");
-    }
+    input.value = "";
+}
 
-    function openDM(user) {
-        state.mode = "dm";
-        state.currentDM = user;
-
-        openDMPage();
-
-        dmList.innerHTML = `
-            <h3>Chat with ${user}</h3>
-            <button onclick="openServer()">← Back</button>
-            <hr>
-            <p>DM ready</p>
-        `;
-
-        socket.emit("joinDM", user);
-    }
-
-    function startDM() {
-        const user = document.getElementById("dmInput").value.trim();
-        if (!user) return;
-        openDM(user);
-    }
-
-    // EXPOSE GLOBAL FUNCTIONS
-    window.openServer = openServer;
-    window.openDMPage = openDMPage;
-    window.openDM = openDM;
-    window.startDM = startDM;
-    window.send = send;
+// ENTER KEY
+input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") send();
 });
+
+// =====================
+// RECEIVE GLOBAL MESSAGE
+// =====================
+socket.on("message", (data) => {
+    const li = document.createElement("li");
+
+    const time = new Date(data.time).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    li.innerHTML = `
+        <strong>${data.user}</strong>
+        <small style="opacity:0.5; margin-left:8px;">${time}</small>
+        <br>
+        ${data.text}
+    `;
+
+    messages.appendChild(li);
+    messages.scrollTop = messages.scrollHeight;
+});
+
+// =====================
+// ONLINE USERS
+// =====================
+socket.on("users", (list) => {
+    users.innerHTML = "";
+
+    list.forEach(user => {
+        if (user === username) return;
+
+        const li = document.createElement("li");
+        li.textContent = "🟢 " + user;
+
+        li.onclick = () => openDM(user);
+
+        users.appendChild(li);
+    });
+});
+
+// =====================
+// OPEN DM (REAL CHAT WINDOW)
+// =====================
+function openDM(user) {
+    state.mode = "dm";
+    state.currentDM = user;
+
+    openDMPage();
+
+    dmList.innerHTML = `
+        <div id="dmHeader">
+            <h3>💬 Chat with ${user}</h3>
+            <button onclick="openServer()">← Back</button>
+        </div>
+
+        <ul id="dmMessages"></ul>
+
+        <div id="dmInputArea">
+            <input id="dmInputBox" placeholder="message...">
+            <button onclick="sendDM()">Send</button>
+        </div>
+    `;
+
+    loadHistory(user);
+}
+
+// =====================
+// SEND DM
+// =====================
+function sendDM() {
+    const input = document.getElementById("dmInputBox");
+    const text = input.value.trim();
+    if (!text) return;
+
+    socket.emit("dmMessage", {
+        to: state.currentDM,
+        text
+    });
+
+    input.value = "";
+}
+
+// =====================
+// LOAD DM HISTORY
+// =====================
+function loadHistory(user) {
+    socket.emit("getHistory", { user });
+}
+
+socket.on("dmHistory", (messages) => {
+    const box = document.getElementById("dmMessages");
+    if (!box) return;
+
+    box.innerHTML = "";
+
+    messages.forEach(m => {
+        const li = document.createElement("li");
+        li.textContent = `${m.from}: ${m.text}`;
+        box.appendChild(li);
+    });
+});
+
+// =====================
+// GLOBAL FUNCTIONS (IMPORTANT)
+// =====================
+window.openServer = openServer;
+window.openDMPage = openDMPage;
+window.openDM = openDM;
+window.send = send;
+window.sendDM = sendDM;
