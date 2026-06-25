@@ -2,7 +2,7 @@
 // =====================
 // SOCKET
 // =====================
-const socket = io("https://letstok-backend.onrender.com");
+const socket = io("https://prophet-sand-interface-volunteers.trycloudflare.com");
 
 // =====================
 // AUTH
