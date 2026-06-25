@@ -2,7 +2,7 @@
 // =====================
 // SOCKET
 // =====================
-const socket = io("https://letstok-backend.onrender.com");
+const socket = io("https://letstok-backendv2.onrender.com");
 
 // =====================
 // AUTH
