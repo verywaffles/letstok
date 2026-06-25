@@ -186,3 +186,8 @@ window.openDMPage = openDMPage;
 window.openDM = openDM;
 window.send = send;
 window.sendDM = sendDM;
+
+setInterval(() => {
+    fetch("https://letstok-backend.onrender.com")
+        .catch(() => {});
+}, 60000); // every 60 seconds
