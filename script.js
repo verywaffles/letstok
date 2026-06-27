@@ -4,7 +4,15 @@
 
 const BACKEND_URL = "https://letstok-backendv2.onrender.com";
 
-const socket = io(BACKEND_URL);
+// =====================
+// FIX: prevent duplicate socket connections on reload
+// =====================
+
+if (!window.__socket) {
+    window.__socket = io(BACKEND_URL);
+}
+
+const socket = window.__socket;
 
 // =====================
 // AUTH
@@ -48,9 +56,7 @@ socket.on("connect", () => {
 });
 
 socket.on("disconnect", () => {
-
     console.log("DISCONNECTED");
-
 });
 
 socket.on("connect_error", (err) => {
@@ -58,6 +64,139 @@ socket.on("connect_error", (err) => {
     console.log(err);
     console.log(err.message);
 });
+
+// =====================
+// FIX: prevent duplicate event listeners on reload
+// =====================
+
+if (!window.__listenersAttached) {
+    window.__listenersAttached = true;
+
+    if (input) {
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                send();
+            }
+        });
+    }
+
+    socket.on("message", (data) => {
+
+        console.log("MESSAGE:", data);
+
+        if (state.mode === "dm" && state.currentDM) {
+
+            const dmBox = document.getElementById("dmMessages");
+
+            if (
+                dmBox &&
+                data.room &&
+                data.room.includes(state.currentDM)
+            ) {
+
+                const li = document.createElement("li");
+
+                li.innerHTML =
+                    `<strong>${data.user}</strong>: ${data.text}`;
+
+                dmBox.appendChild(li);
+
+                dmBox.scrollTop = dmBox.scrollHeight;
+
+                return;
+            }
+        }
+
+        const li = document.createElement("li");
+
+        const time = new Date(
+            data.time || Date.now()
+        ).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+
+        li.innerHTML = `
+            <strong>${data.user}</strong>
+            <small style="opacity:.5;margin-left:8px;">
+                ${time}
+            </small>
+            <br>
+            ${data.text}
+        `;
+
+        messages.appendChild(li);
+        messages.scrollTop = messages.scrollHeight;
+    });
+
+    socket.on("history", (history) => {
+
+        messages.innerHTML = "";
+
+        history.forEach((msg) => {
+
+            const li = document.createElement("li");
+
+            li.innerHTML = `
+                <strong>${msg.user}</strong>
+                <br>
+                ${msg.text}
+            `;
+
+            messages.appendChild(li);
+
+        });
+
+    });
+
+    socket.on("users", (list) => {
+
+        console.log("ONLINE USERS:", list);
+
+        users.innerHTML = "";
+
+        list.forEach((user) => {
+
+            if (user === username) return;
+
+            const li = document.createElement("li");
+
+            li.textContent = "🟢 " + user;
+
+            li.style.cursor = "pointer";
+
+            li.onclick = () => {
+                openDM(user);
+            };
+
+            users.appendChild(li);
+
+        });
+
+    });
+
+    socket.on("dmHistory", (history) => {
+
+        const dmBox =
+            document.getElementById("dmMessages");
+
+        if (!dmBox) return;
+
+        dmBox.innerHTML = "";
+
+        history.forEach((msg) => {
+
+            const li = document.createElement("li");
+
+            li.innerHTML =
+                `<strong>${msg.from}</strong>: ${msg.text}`;
+
+            dmBox.appendChild(li);
+
+        });
+
+    });
+}
 
 // =====================
 // PAGE SWITCHING
@@ -95,131 +234,6 @@ function send() {
     input.value = "";
 
 }
-
-// Enter key
-
-if (input) {
-
-    input.addEventListener("keydown", (e) => {
-
-        if (e.key === "Enter") {
-            send();
-        }
-
-    });
-
-}
-
-// =====================
-// RECEIVE MESSAGE
-// =====================
-
-socket.on("message", (data) => {
-
-    console.log("MESSAGE:", data);
-
-    if (state.mode === "dm" && state.currentDM) {
-
-        const dmBox = document.getElementById("dmMessages");
-
-        if (
-            dmBox &&
-            data.room &&
-            data.room.includes(state.currentDM)
-        ) {
-
-            const li = document.createElement("li");
-
-            li.innerHTML =
-                `<strong>${data.user}</strong>: ${data.text}`;
-
-            dmBox.appendChild(li);
-
-            dmBox.scrollTop = dmBox.scrollHeight;
-
-            return;
-        }
-    }
-
-    const li = document.createElement("li");
-
-    const time = new Date(
-        data.time || Date.now()
-    ).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
-
-    li.innerHTML = `
-        <strong>${data.user}</strong>
-        <small style="opacity:.5;margin-left:8px;">
-            ${time}
-        </small>
-        <br>
-        ${data.text}
-    `;
-
-    messages.appendChild(li);
-
-    messages.scrollTop = messages.scrollHeight;
-
-});
-
-// =====================
-// GLOBAL HISTORY
-// =====================
-
-socket.on("history", (history) => {
-
-    messages.innerHTML = "";
-
-    history.forEach((msg) => {
-
-        const li = document.createElement("li");
-
-        li.innerHTML = `
-            <strong>${msg.user}</strong>
-            <br>
-            ${msg.text}
-        `;
-
-        messages.appendChild(li);
-
-    });
-
-});
-
-// =====================
-// ONLINE USERS
-// =====================
-
-socket.on("users", (list) => {
-
-    console.log("ONLINE USERS:", list);
-
-    users.innerHTML = "";
-
-    list.forEach((user) => {
-
-        if (user === username) return;
-
-        const li = document.createElement("li");
-
-        li.textContent = "🟢 " + user;
-
-        li.style.cursor = "pointer";
-
-        li.onclick = () => {
-
-            openDM(user);
-
-        };
-
-        users.appendChild(li);
-
-    });
-
-});
 
 // =====================
 // OPEN DM
@@ -281,41 +295,13 @@ function sendDM() {
     if (!text) return;
 
     socket.emit("dmMessage", {
-
         to: state.currentDM,
         text
-
     });
 
     box.value = "";
 
 }
-
-// =====================
-// DM HISTORY
-// =====================
-
-socket.on("dmHistory", (history) => {
-
-    const dmBox =
-        document.getElementById("dmMessages");
-
-    if (!dmBox) return;
-
-    dmBox.innerHTML = "";
-
-    history.forEach((msg) => {
-
-        const li = document.createElement("li");
-
-        li.innerHTML =
-            `<strong>${msg.from}</strong>: ${msg.text}`;
-
-        dmBox.appendChild(li);
-
-    });
-
-});
 
 // =====================
 // START NEW DM
